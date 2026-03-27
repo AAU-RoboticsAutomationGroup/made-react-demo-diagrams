@@ -1,0 +1,60 @@
+title Basic Operator Workflow 
+
+participant Operator
+participant FESTO Magazines
+participant FESTO MES4
+participant FESTO Line
+participant QC Station
+participant AMR
+
+note over AMR: Idle at charging dock
+note over FESTO Magazines: Magazines are empty before production
+note over FESTO Line: System and robot cell is booted and  idle
+note over QC Station: Station is empty
+
+
+Operator->FESTO Magazines:Refill Cover magazines
+Operator->FESTO Magazines:Refill Fuse magazines
+Operator->FESTO Magazines:Refill PCB pallet
+Operator->AMR: Initialize AMR
+Operator->AMR: Set # of items to pick up
+AMR-->Operator: AMR is initialized
+
+Operator->Operator: Verify all system are ready
+
+Operator->FESTO MES4:Set orders for run
+FESTO MES4->FESTO Line: Apply orders to modules
+FESTO Line-->FESTO MES4: Orders began production
+FESTO MES4-->Operator: Orders began production
+
+loop monitor production
+loop magazines are empty
+ Operator->FESTO Magazines:Refill Cover magazines
+ Operator->FESTO Magazines:Refill Fuse magazines
+ Operator->FESTO Magazines:Refill PCB pallet
+end
+
+AMR--> Operator: AMR arrives at QC station with products
+Operator->AMR: Remove finished items from AMR
+Operator->AMR: Confirm items are removed
+Operator->QC Station: Move finished products to QC Station
+Operator->QC Station: Perform quality control
+QC Station-->Operator: Product meets QC
+Operator-> Warehouse: Move finished products to warehouse
+
+alt product does not meet QC
+  QC Station-->Operator: Product does not meet QC
+  Operator->FESTO Magazines: Disassemble broken products
+  Operator->FESTO Magazines: Refill magazines
+end
+
+else production complete
+Operator->FESTO MES4: Confirm all products are produced
+FESTO MES4-->Operator: No more products to produce
+Operator->AMR: Shut down AMR
+Operator->FESTO Magazines: Remove all parts from magazines
+Operator->FESTO Line: Shut down FESTO Line
+Operator->Operator: Confirm all systems are shut down
+end
+
+note over Operator: Idle wait for new orders
