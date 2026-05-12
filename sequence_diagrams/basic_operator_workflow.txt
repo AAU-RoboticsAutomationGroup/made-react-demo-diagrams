@@ -17,7 +17,6 @@ Operator->FESTO Magazines:Refill Cover magazines
 Operator->FESTO Magazines:Refill Fuse magazines
 Operator->FESTO Magazines:Refill PCB pallet
 Operator->AMR: Initialize AMR
-Operator->AMR: Set # of items to pick up
 AMR-->Operator: AMR is initialized
 
 Operator->Operator: Verify all system are ready
