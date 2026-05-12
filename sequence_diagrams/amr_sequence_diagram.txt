@@ -10,8 +10,6 @@ participant Charing Station Dock
 
 note over AMR: Idle at charging dock
 
-User->AMR: Set # of items to pick up
-
 AMR->OPC UA: Read value
 OPC UA-->AMR: xCarrierAvailable = true
 
@@ -23,15 +21,8 @@ end
 AMR->FESTO Dock: Move to FESTO dock
 FESTO Dock-->AMR: Docking signal
 
-loop docking failed
-  AMR->FESTO Dock: Retry — move to FESTO dock again
-else docking success
-  FESTO Dock-->AMR: Docked success
-else docking failed > 5 times
-  AMR--> Chaging Station Dock: return to charging station
-end
 
-loop picked count < requested
+loop picked count < 3
 
   note over UR5 Arm: Extend arm over phone
   note over UR5 Arm: Open gripper
@@ -39,26 +30,20 @@ loop picked count < requested
   note over UR5 Arm: Move arm over phone drop off
   UR5 Arm-->AMR: Item picked
   AMR-->OPC UA: Write to PLC
+  note over UR5 Arm: Wait 10s
 end
 
 AMR->QC Station Dock: Move to QC dock
 QC Station Dock -->AMR: Docking signal
 
-loop docking failed
-  AMR->QC Station Dock: retry move to QC dock
-else docking success
-  QC Station Dock -->AMR: Docked ok
-else docking failed > 5 times
-  AMR--> Chaging Station Dock: return to charging station
-end
 
 User->QC Station: Operator picks phones from AMR
 note over QC Station: QC inspection
 QC Station-->User: Inspection result
 
-alt more products to pick
-  AMR->FESTO Dock: Move back to FESTO dock
-else no more products
+AMR->FESTO Dock: Move back to FESTO dock
+
+alt AMR battery_level < 20%
   AMR->AMR: Proceed to charging dock
 end
 
